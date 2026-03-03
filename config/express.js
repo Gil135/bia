@@ -10,7 +10,7 @@ module.exports = () => {
   // SETANDO VARIÁVEIS DA APLICAÇÃO
   app.set("port", process.env.PORT || config.get("server.port"));
 
-  //Setando react
+  // Setando react
   app.use(express.static(path.join(__dirname, "../", "client", "build")));
 
   // parse request bodies (req.body)
