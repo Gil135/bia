@@ -64,6 +64,8 @@ app.use(function (req, res, next) {
 
 // load controllers
 require("./lib/boot")(app, { verbose: false });
+const instanceRoutes = require('./app/controllers/instanceInfo'); // Caminho corrigido para o controller
+app.use(instanceRoutes.prefix, instanceRoutes.router); // Usa o router exportado pelo controller
 
 app.use(function (err, req, res, next) {
   // log it
