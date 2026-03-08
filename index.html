@@ -1,12 +1,274 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <title>Hello World Simple App</title>
-    </head>
-    <body>
-        <div>Hello World!</div>
-    </body>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projeto BIA</title>
+  <style>
+    /* ── Reset e base  */
+    * {
+      margin: 0;<br/>
+      padding: 0;<br/>
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;<br/>
+      background: #0f1117;<br/>
+      color: #e2e8f0;<br/>
+      min-height: 100vh;<br/>
+      display: flex;<br/>
+      flex-direction: column;<br/>
+      align-items: center;<br/>
+      justify-content: center;<br/>
+      padding: 24px;
+    }
+
+    /* ── Card principal  */
+    .card {
+      background: #1a1d27;<br/>
+      border: 1px solid #2d3148;<br/>
+      border-radius: 16px;<br/>
+      padding: 40px 48px;<br/>
+      max-width: 560px;<br/>
+      width: 100%;<br/>
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ── Cabeçalho  */
+    .header {
+      text-align: center;<br/>
+      margin-bottom: 32px;
+    }
+
+    .header .logo {
+      font-size: 48px;<br/>
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 28px;<br/>
+      font-weight: 700;<br/>
+      color: #ffffff;<br/>
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      font-size: 14px;<br/>
+      color: #64748b;<br/>
+      margin-top: 6px;
+    }
+
+    /* ── Badge de ambiente ─────────────────────────────────────── */
+    .env-badge {
+      display: inline-flex;<br/>
+      align-items: center;<br/>
+      gap: 6px;<br/>
+      background: #1e293b;<br/>
+      border: 1px solid #334155;<br/>
+      border-radius: 20px;<br/>
+      padding: 4px 12px;<br/>
+      font-size: 12px;<br/>
+      color: #94a3b8;<br/>
+      margin-bottom: 24px;
+    }
+
+    .env-badge .dot {
+      width: 7px;<br/>
+      height: 7px;<br/>
+      border-radius: 50%;<br/>
+      background: #22c55e;<br/>
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }<br/>
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Lista de informações ──────────────────────────────────── */
+    .info-list {
+      display: flex;<br/>
+      flex-direction: column;<br/>
+      gap: 12px;
+    }
+
+    .info-item {
+      display: flex;<br/>
+      align-items: center;<br/>
+      justify-content: space-between;<br/>
+      background: #0f1117;<br/>
+      border: 1px solid #1e2535;<br/>
+      border-radius: 10px;<br/>
+      padding: 14px 18px;<br/>
+      gap: 12px;<br/>
+      transition: border-color 0.2s;
+    }
+
+    .info-item:hover {<br/>
+      border-color: #3b4fd8;
+    }
+
+    .info-item .label {
+      display: flex;<br/>
+      align-items: center;<br/>
+      gap: 8px;<br/>
+      font-size: 13px;<br/>
+      color: #64748b;<br/>
+      white-space: nowrap;
+    }
+
+    .info-item .label .icon {
+      font-size: 16px;
+    }
+
+    .info-item .value {
+      font-size: 14px;<br/>
+      font-weight: 600;<br/>
+      color: #e2e8f0;<br/>
+      font-family: 'Courier New', monospace;<br/>
+      text-align: right;<br/>
+      word-break: break-all;
+    }
+
+    /* ── Estado de loading ─────────────────────────────────────── */
+    .value.loading {
+      color: #475569;<br/>
+      font-style: italic;<br/>
+      font-family: 'Segoe UI', sans-serif;<br/>
+      font-weight: 400;
+    }
+
+    /* ── Estado de erro  */
+    .value.error {
+      color: #f87171;<br/>
+      font-family: 'Segoe UI', sans-serif;<br/>
+      font-weight: 400;
+    }
+
+    /* ── Footer  */
+    .footer {
+      margin-top: 24px;<br/>
+      text-align: center;<br/>
+      font-size: 12px;<br/>
+      color: #334155;
+    }
+
+    .footer span {
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <!-- Cabeçalho -->
+    <div class="header">
+      <div class="logo">☁️</div>
+      <h1>Projeto BIA</h1>
+      <p>Informações da Instância AWS EC2</p>
+    </div>
+
+    <!-- Badge de ambiente (preenchido via JS) -->
+    <div style="text-align: center;">
+      <span class="env-badge">
+        <span class="dot"></span>
+        <span id="env-label">Carregando...</span>
+      </span>
+    </div>
+
+    <!-- Lista de metadados -->
+    <div class="info-list">
+
+      <div class="info-item">
+        <span class="label"><span class="icon">🆔</span> Instance ID</span>
+        <span class="value loading" id="instance-id">carregando...</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label"><span class="icon">🌐</span> IP Público</span>
+        <span class="value loading" id="public-ip">carregando...</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label"><span class="icon">🔒</span> IP Privado</span>
+        <span class="value loading" id="local-ip">carregando...</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label"><span class="icon">⚙️</span> Tipo de Instância</span>
+        <span class="value loading" id="instance-type">carregando...</span>
+      </div>
+
+      <div class="info-item">
+        <span class="label"><span class="icon">📍</span> Zona de Disponibilidade</span>
+        <span class="value loading" id="availability-zone">carregando...</span>
+      </div>
+
+    </div>
+
+    <!-- Footer com timestamp -->
+    <div class="footer">
+      Atualizado em: <span id="timestamp">—</span>
+    </div>
+
+  </div>
+
+  <script>
+    /**
+     * Busca os dados da instância EC2 na rota /api/instance-infos
+     * e preenche os campos do HTML dinamicamente.
+     */
+    async function loadInstanceInfo() {
+      try {
+        const response = await fetch('/api/instance-infos');
+
+        // Verifica se a resposta foi bem-sucedida
+        if (!response.ok) {
+          throw new Error('Resposta da API inválida: ' + response.status);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.message || 'Erro desconhecido na API');
+        }
+
+        const data = result.data;
+
+        // Preenche os campos com os dados recebidos
+        document.getElementById('instance-id').textContent       = data.instanceId       || 'N/A';
+        document.getElementById('public-ip').textContent         = data.publicIp         || 'N/A';
+        document.getElementById('local-ip').textContent          = data.localIp          || 'N/A';
+        document.getElementById('instance-type').textContent     = data.instanceType     || 'N/A';
+        document.getElementById('availability-zone').textContent = data.availabilityZone || 'N/A';
+        document.getElementById('env-label').textContent         = data.environment      || 'AWS EC2';
+
+        // Formata o timestamp para exibição legível
+        const ts = new Date(data.timestamp);
+        document.getElementById('timestamp').textContent = ts.toLocaleString('pt-BR');
+
+        // Remove a classe "loading" dos valores preenchidos
+        document.querySelectorAll('.value').forEach(el => el.classList.remove('loading'));
+
+      } catch (error) {
+        console.error('[BIA] Erro ao carregar informações da instância:', error);
+
+        // Exibe mensagem de erro nos campos
+        document.querySelectorAll('.value').forEach(el => {
+          el.textContent = 'Erro ao carregar';
+          el.classList.remove('loading');
+          el.classList.add('error');
+        });
+
+        document.getElementById('env-label').textContent = 'Erro de conexão';
+      }
+    }
+
+    // Executa ao carregar a página
+    loadInstanceInfo();
+  </script>
+
+</body>
 </html>
