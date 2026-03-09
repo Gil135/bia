@@ -56,6 +56,8 @@ const EC2Info = () => {
 
   return (
     <div className="ec2-info-wrapper">
+       {/* ── Botão principal que abre/fecha o tooltip ── */}
+      {/* COMENTANDO O BOTÃO ABAIXO PARA ESCONDER DA TELA
       <button
         className={`ec2-trigger ${status}`}
         onClick={() => setShowDetails(!showDetails)}
@@ -63,6 +65,9 @@ const EC2Info = () => {
       >
         {getStatusIcon()} {getShortId()}
       </button>
+       */}
+
+      {/* ── Tooltip com detalhes completos ── */}
 
       {showDetails && (
         <div className="ec2-tooltip">
