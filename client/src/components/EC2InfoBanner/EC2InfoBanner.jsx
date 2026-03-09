@@ -20,6 +20,7 @@ const InfoItem = ({ label, value }) => (
 );
 
 // Sub-componente: animação de loading (skeleton)
+
 const BannerSkeleton = () => (
   <div className={styles.banner}>
     <div className={styles.skeletonWrapper}>
