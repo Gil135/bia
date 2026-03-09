@@ -1,87 +1,114 @@
 import React, { useState, useEffect } from 'react';
 
 // ─────────────────────────────────────────────────────────────
-// EC2Info — Exibe Instance ID e IP da instância EC2 no Header
-// Busca dados via GET /api/instance-infos (registrada pelo boot.js)
+// EC2Info — Identifica qual instância EC2 está servindo a página
+//
+// ESTRATÉGIA PARA CLUSTER:
+// O backend Express injeta os dados da instância diretamente no
+// HTML via window.__EC2_INFO__ antes de entregar ao browser.
+// Assim, mesmo com Load Balancer na frente, os dados sempre
+// correspondem à instância que respondeu a requisição original.
+//
+// Fallback: se window.__EC2_INFO__ não existir (dev local sem build),
+// faz fetch para /api/instance-infos na mesma origem.
 // ─────────────────────────────────────────────────────────────
 
 const EC2Info = () => {
   const [instanceData, setInstanceData] = useState(null);
-  const [status, setStatus] = useState('loading');
-  const [showDetails, setShowDetails] = useState(false);
+  const [status, setStatus]             = useState('loading');
+  const [showDetails, setShowDetails]   = useState(false);
 
-  // Detecta a URL base correta da API
-  // Backend Express roda na porta 3000
-  const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    if (window.location.port === '3000') return window.location.origin;
-    // Em produção na AWS, usa a mesma origem (sem porta)
-    if (window.location.port === '' || window.location.port === '80') {
-      return window.location.origin;
-    }
-    // Fallback para dev local — backend Express na porta 3000
-    return 'http://localhost:3000';
-  };
-
-  const fetchInstanceInfo = async () => {
+  // ─────────────────────────────────────────────────────────
+  // loadData — Carrega os dados da instância
+  //
+  // Prioridade:
+  // 1. window.__EC2_INFO__ (injetado pelo servidor — SEMPRE correto em cluster)
+  // 2. fetch /api/instance-infos (fallback para dev local)
+  // ─────────────────────────────────────────────────────────
+  const loadData = async (isRefresh = false) => {
     setStatus('loading');
-    try {
-      const apiUrl = getApiUrl();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(`${apiUrl}/api/instance-infos`, {
-        signal: controller.signal,
+    try {
+      // ✅ Caminho principal: dados já injetados no HTML pelo Express
+      // Em cluster, garante que os dados são da instância que serviu a página
+      if (window.__EC2_INFO__ && !isRefresh) {
+        setInstanceData(window.__EC2_INFO__);
+        setStatus('success');
+        return;
+      }
+
+      // 🔄 Fallback: fetch direto (dev local ou refresh manual)
+      // Usa window.location.origin para garantir mesma origem (sem Load Balancer)
+      const response = await fetch(`${window.location.origin}/api/instance-infos`, {
         method: 'GET',
         cache: 'no-cache',
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
+
+      // Atualiza o cache global para futuras leituras
+      window.__EC2_INFO__ = data;
+
       setInstanceData(data);
       setStatus('success');
+
     } catch (error) {
-      console.warn('[EC2Info] Falha ao buscar metadados:', error.message);
+      console.warn('[EC2Info] Falha ao carregar dados:', error.message);
       setStatus('error');
     }
   };
 
+  // Carrega os dados ao montar o componente
   useEffect(() => {
-    fetchInstanceInfo();
-    const interval = setInterval(fetchInstanceInfo, 60000);
-    return () => clearInterval(interval);
+    loadData();
   }, []);
 
+  // ─────────────────────────────────────────────────────────
+  // Helpers de exibição
+  // ─────────────────────────────────────────────────────────
+
+  // Ícone que indica o status atual da busca
   const getStatusIcon = () => {
     if (status === 'success') return '🟢';
-    if (status === 'error') return '🔴';
+    if (status === 'error')   return '🔴';
     return '🟡';
   };
 
+  // Versão curta do Instance ID para o botão do header
   const getShortId = () => {
     if (!instanceData?.instanceId) return 'EC2';
     const id = instanceData.instanceId;
-    if (id === 'localhost' || id === 'local-dev') return 'Local';
+    if (id === 'local-dev' || id === 'localhost') return 'Local';
+    // Exibe inicio e fim para identificação rápida: i-0abc123...ef12
     return id.length > 13 ? `${id.slice(0, 9)}...${id.slice(-4)}` : id;
   };
 
+  // ─────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────
   return (
     <div className="ec2-info-wrapper">
+
+      {/* Botão no header — clique para abrir/fechar o tooltip */}
       <button
         className={`ec2-trigger ${status}`}
         onClick={() => setShowDetails(!showDetails)}
-        title="Informações da instância EC2"
+        title="Clique para ver informações desta instância EC2"
       >
         {getStatusIcon()} {getShortId()}
       </button>
 
+      {/* Tooltip com detalhes completos da instância */}
       {showDetails && (
         <div className="ec2-tooltip">
-          <div className="ec2-tooltip-header">☁️ EC2 Instance Info</div>
 
+          <div className="ec2-tooltip-header">
+            ☁️ EC2 Instance Info
+          </div>
+
+          {/* Estado: carregando */}
           {status === 'loading' && (
             <div className="ec2-row">
               <span className="ec2-label">Status</span>
@@ -89,6 +116,7 @@ const EC2Info = () => {
             </div>
           )}
 
+          {/* Estado: erro na busca */}
           {status === 'error' && (
             <div className="ec2-row">
               <span className="ec2-label">Status</span>
@@ -96,6 +124,7 @@ const EC2Info = () => {
             </div>
           )}
 
+          {/* Estado: dados carregados com sucesso */}
           {status === 'success' && instanceData && (
             <div>
               <div className="ec2-row">
@@ -127,13 +156,15 @@ const EC2Info = () => {
             </div>
           )}
 
+          {/* Botão para forçar refresh dos dados via fetch */}
           <button
             className="ec2-refresh-btn"
-            onClick={fetchInstanceInfo}
+            onClick={() => loadData(true)}
             disabled={status === 'loading'}
           >
             🔄 {status === 'loading' ? 'Atualizando...' : 'Atualizar'}
           </button>
+
         </div>
       )}
     </div>
