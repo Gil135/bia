@@ -8,9 +8,8 @@ import Tasks from "./components/Tasks.jsx";
 import AddTask from "./components/AddTask.jsx";
 import About from "./components/About.jsx";
 import DebugLogs from "./components/DebugLogs.jsx";
-
-// Import do banner da EC2
 import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner";
+
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
