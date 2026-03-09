@@ -25,7 +25,7 @@ app.use(session({
   secret: 'some secret here'
 }));
 
-// ✅ Linha corrigida — removido o (req.body) inválido
+
 app.use(express.urlencoded({ extended: true }));
 
 app.use(methodOverride('_method'));
