@@ -1,7 +1,4 @@
-// ============================================================
-// index.js — Servidor principal Express — Projeto "bia"
-// Localização: raiz do projeto (mesmo nível que package.json)
-// ============================================================
+
 
 const express        = require('express');
 const morgan         = require('morgan');
