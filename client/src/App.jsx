@@ -7,11 +7,9 @@ import Footer from "./components/Footer.jsx";
 import Tasks from "./components/Tasks.jsx";
 import AddTask from "./components/AddTask.jsx";
 import About from "./components/About.jsx";
-import DebugLogs from "./components/DebugLogs.jsx";
-// client/src/App.jsx
+import DebugLogs from "./components/DebugLogs.jsx"; // client/src/App.jsx
 import React from "react";
-import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner";
-// ... seus outros imports
+import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner"; // ... seus outros imports
 
 function App() {
   return (
