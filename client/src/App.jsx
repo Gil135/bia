@@ -26,9 +26,7 @@ function App() {
 }
 
 export default App;// client/src/App.jsx
-import React from "react";
-import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner";
-// ... seus outros imports
+
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
