@@ -3,8 +3,8 @@
 //
 // Banner fixo no topo da página que exibe os dados da instância
 // EC2 que está atendendo a requisição atual.
-// Útil para demonstrar o funcionamento do Load Balancer:
-// ao recarregar, pode-se ver outra instância assumindo.
+// Útil para demonstrar o ALB: ao recarregar, o Instance ID
+// pode mudar, mostrando outra instância assumindo o tráfego.
 // ============================================================
 
 import React from "react";
@@ -19,7 +19,7 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-// Sub-componente: Skeleton de loading
+// Sub-componente: animação de loading (skeleton)
 const BannerSkeleton = () => (
   <div className={styles.banner}>
     <div className={styles.skeletonWrapper}>
@@ -44,10 +44,10 @@ const EC2InfoBanner = () => {
     );
   }
 
-  // Detecta EC2 real pelo instanceId (não é 'localhost')
-  const isEC2 = data?.instanceId && data.instanceId !== "localhost";
+  // ✅ CORRIGIDO: usa o campo "isAWS" que a API realmente retorna
+  const isEC2 = data?.isAWS === true;
 
-  // Deriva a região a partir da AZ: "us-east-1a" → "us-east-1"
+  // ✅ CORRIGIDO: deriva região da AZ ("us-east-1a" → "us-east-1")
   const region = data?.availabilityZone
     ? data.availabilityZone.slice(0, -1)
     : "N/A";
@@ -64,6 +64,7 @@ const EC2InfoBanner = () => {
         <InfoItem label="Tipo"        value={data?.instanceType} />
         <InfoItem label="AZ"          value={data?.availabilityZone} />
         <InfoItem label="Região"      value={region} />
+        {/* ✅ CORRIGIDO: campo "localIp" conforme retorno da API */}
         <InfoItem label="IP Privado"  value={data?.localIp} />
         <InfoItem label="IP Público"  value={data?.publicIp} />
       </div>
