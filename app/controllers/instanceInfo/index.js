@@ -1,34 +1,42 @@
 /**
  * Controller: instanceInfo
- * 
- * Segue o padrão exato do boot.js do projeto:
- * - exports.name   → nome do controller (usado na URL)
- * - exports.prefix → prefixo da rota
- * - exports.index  → mapeia para GET /
- * 
- * O boot.js carrega automaticamente este controller
- * por estar na pasta app/controllers/instanceInfo/
+ *
+ * Segue o padrão do lib/boot.js do projeto BIA.
+ * O boot.js mapeia automaticamente:
+ *   exports.list → GET /api/instance-infos
  */
 
-const { getInstanceInfo } = require("../../../lib/metadataService");
+const { getInstanceMetadata } = require('../../../lib/metadataService');
 
-// Nome do controller (boot.js usa para montar as rotas)
-exports.name = "instanceInfo";
+// Nome do controller — usado pelo boot.js para montar a URL
+exports.name = 'instance-info';
 
-// Prefixo vazio = rota na raiz
-exports.prefix = "";
+// Prefixo da rota — rota final será: GET /api/instance-infos
+exports.prefix = '/api';
 
 /**
- * GET /api/instance-info
- * Retorna os dados da instância EC2 em JSON
- * Usado pelo frontend para exibir as informações
+ * GET /api/instance-infos
+ * Retorna os metadados da instância EC2 em JSON plano (sem wrapper)
  */
-exports.list = async function (req, res) {
-  try {
-    const info = await getInstanceInfo();
-    res.json(info);
-  } catch (err) {
-    console.error("[instanceInfo] Erro ao buscar metadados:", err.message);
-    res.status(500).json({ error: "Erro ao buscar informações da instância" });
-  }
+exports.list = function (req, res) {
+  getInstanceMetadata(function (err, metadata) {
+    if (err) {
+      console.error('[instanceInfo] Erro ao buscar metadados:', err.message);
+      return res.status(500).json({ error: 'Erro ao buscar informações da instância.' });
+    }
+
+    // Determina se está rodando na AWS
+    var isAWS = metadata.instanceId !== 'localhost';
+
+    // Retorna JSON plano — o frontend acessa data.instanceId diretamente
+    return res.status(200).json({
+      instanceId:       metadata.instanceId,
+      localIp:          metadata.localIp,
+      publicIp:         metadata.publicIp,
+      instanceType:     metadata.instanceType,
+      availabilityZone: metadata.availabilityZone,
+      environment:      isAWS ? 'AWS EC2' : 'Local Development',
+      isAWS:            isAWS,
+    });
+  });
 };
