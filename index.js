@@ -234,6 +234,76 @@ app.get('/api/instance-info', async (req, res) => {
 // CONTROLLERS — carregados automaticamente via lib/boot
 // (rotas das tarefas, autenticação, etc.)
 // ──────────────────────────────────────────────
+// ──────────────────────────────────────────────
+// HEALTH CHECK — ALB verifica se instância está saudável
+// ──────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status   : 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ──────────────────────────────────────────────
+// METADADOS DA INSTÂNCIA EC2 — IMDSv2
+// ──────────────────────────────────────────────
+const fetchWithTimeout = (url, options = {}, timeoutMs = 2000) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+};
+
+app.get('/api/instance-info', async (req, res) => {
+  const IMDS_BASE = 'http://169.254.169.254/latest';
+
+  const getMeta = async (token, metaPath) => {
+    try {
+      const r = await fetchWithTimeout(
+        `${IMDS_BASE}/meta-data${metaPath}`,
+        { headers: { 'X-aws-ec2-metadata-token': token } }
+      );
+      return r.ok ? await r.text() : null;
+    } catch { return null; }
+  };
+
+  try {
+    const tokenRes = await fetchWithTimeout(`${IMDS_BASE}/api/token`, {
+      method : 'PUT',
+      headers: { 'X-aws-ec2-metadata-token-ttl-seconds': '21600' }
+    });
+
+    if (!tokenRes.ok) throw new Error('Falha ao obter token IMDS');
+    const token = await tokenRes.text();
+
+    const [instanceId, instanceType, availabilityZone, privateIp, publicIp, hostname] =
+      await Promise.all([
+        getMeta(token, '/instance-id'),
+        getMeta(token, '/instance-type'),
+        getMeta(token, '/placement/availability-zone'),
+        getMeta(token, '/local-ipv4'),
+        getMeta(token, '/public-ipv4'),
+        getMeta(token, '/hostname'),
+      ]);
+
+    const region = availabilityZone ? availabilityZone.slice(0, -1) : null;
+
+    return res.json({
+      instanceId, instanceType, availabilityZone,
+      region, privateIp, publicIp, hostname,
+      source: 'ec2-imds'
+    });
+
+  } catch (err) {
+    console.warn('[instance-info] IMDS indisponível:', err.message);
+    return res.json({
+      instanceId: 'local-dev', instanceType: 'N/A',
+      availabilityZone: 'N/A', region: 'N/A',
+      privateIp: '127.0.0.1', publicIp: null,
+      hostname: 'localhost', source: 'fallback-local'
+    });
+  }
+});
 require('./lib/boot')(app, { verbose: false });
 
 // ──────────────────────────────────────────────
