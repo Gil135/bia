@@ -5,7 +5,7 @@ import React from "react";
 import useEC2Info from "../../hooks/useEC2Info";
 import styles from "./EC2InfoBanner.module.css";
 
-// Sub-componente: item individual de informação
+
 const InfoItem = ({ label, value }) => (
   <div className={styles.infoItem}>
     <span className={styles.infoLabel}>{label}</span>
@@ -13,7 +13,7 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-// Sub-componente: Skeleton de loading
+
 const BannerSkeleton = () => (
   <div className={styles.banner}>
     <div className={styles.skeletonWrapper}>
