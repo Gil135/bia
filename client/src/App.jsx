@@ -51,6 +51,7 @@ function AppContent() {
   };
 
   //Listar Tarefas
+  
   const fetchTasks = async () => {
     const url = `${apiUrl}/api/tarefas`;
     logApiRequest('GET', url);
