@@ -70,7 +70,7 @@ const EC2InfoBanner = () => {
       </div>
 
       <div className={`${styles.badge} ${isEC2 ? styles.badgeEC2 : styles.badgeLocal}`}>
-        {isEC2 ?  "🟡 Local Dev" : "✅ EC2 AWS" }
+        {isEC2 ? "✅ EC2 AWS" : "🟡 Local Dev"}
       </div>
     </div>
   );
