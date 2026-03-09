@@ -1,7 +1,3 @@
-// ============================================================
-// client/src/App.jsx
-// Componente raiz da aplicação — integra EC2InfoBanner no topo
-// ============================================================
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
@@ -12,6 +8,8 @@ import Tasks from "./components/Tasks.jsx";
 import AddTask from "./components/AddTask.jsx";
 import About from "./components/About.jsx";
 import DebugLogs from "./components/DebugLogs.jsx";
+
+// Import do banner da EC2
 import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner";
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -138,7 +136,10 @@ function AppContent() {
 
   return (
     <div className="app">
-       <EC2InfoBanner />
+
+      {/* Banner da EC2 — fixo no topo, mostra qual instância está ativa */}
+      <EC2InfoBanner />
+
       <Router>
         <div className="container">
           <Header />
@@ -154,7 +155,6 @@ function AppContent() {
   );
 }
 
-// Componente raiz com providers de contexto
 function App() {
   return (
     <ThemeProvider>
