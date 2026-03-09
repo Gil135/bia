@@ -2,7 +2,7 @@ import React from "react";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { useTheme } from "../contexts/ThemeContext.jsx";
 import VersionInfo from "./VersionInfo";
-import EC2Info from "./EC2Info"; // ← import do novo componente
+import EC2Info from "./EC2Info"; // ← linha adicionada
 
 const Header = ({ title }) => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -10,16 +10,15 @@ const Header = ({ title }) => {
   return (
     <header className="header">
       <h1>{title}</h1>
-
       <div className="header-controls">
 
         {/* Informações da instância EC2 — Instance ID e IPs */}
         <EC2Info />
 
-        {/* Status da API e versão — componente original do projeto */}
+        {/* Status da API — componente original do projeto */}
         <VersionInfo />
 
-        {/* Alternância entre tema claro e escuro */}
+        {/* Botão de tema claro/escuro */}
         <button
           className="theme-toggle"
           onClick={toggleTheme}
