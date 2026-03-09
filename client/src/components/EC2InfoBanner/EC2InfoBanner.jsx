@@ -24,7 +24,6 @@ const BannerSkeleton = () => (
   </div>
 );
 
-// Componente principal
 const EC2InfoBanner = () => {
   const { data, loading, error } = useEC2Info();
 
