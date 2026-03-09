@@ -138,9 +138,7 @@ function AppContent() {
 
   return (
     <div className="app">
-      {/* 👇 Banner da EC2 fixo no topo — mostra qual instância está ativa */}
-      <EC2InfoBanner />
-
+       <EC2InfoBanner />
       <Router>
         <div className="container">
           <Header />
