@@ -1,11 +1,17 @@
 // ============================================================
 // components/EC2InfoBanner/EC2InfoBanner.jsx
+//
+// Banner fixo no topo da página que exibe os dados da instância
+// EC2 que está atendendo a requisição atual.
+// Útil para demonstrar o funcionamento do Load Balancer:
+// ao recarregar, pode-se ver outra instância assumindo.
 // ============================================================
+
 import React from "react";
 import useEC2Info from "../../hooks/useEC2Info";
 import styles from "./EC2InfoBanner.module.css";
 
-
+// Sub-componente: item individual de informação
 const InfoItem = ({ label, value }) => (
   <div className={styles.infoItem}>
     <span className={styles.infoLabel}>{label}</span>
@@ -13,7 +19,7 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
-
+// Sub-componente: Skeleton de loading
 const BannerSkeleton = () => (
   <div className={styles.banner}>
     <div className={styles.skeletonWrapper}>
@@ -24,6 +30,7 @@ const BannerSkeleton = () => (
   </div>
 );
 
+// Componente principal
 const EC2InfoBanner = () => {
   const { data, loading, error } = useEC2Info();
 
@@ -37,7 +44,13 @@ const EC2InfoBanner = () => {
     );
   }
 
-  const isEC2 = data?.source === "ec2-imds";
+  // Detecta EC2 real pelo instanceId (não é 'localhost')
+  const isEC2 = data?.instanceId && data.instanceId !== "localhost";
+
+  // Deriva a região a partir da AZ: "us-east-1a" → "us-east-1"
+  const region = data?.availabilityZone
+    ? data.availabilityZone.slice(0, -1)
+    : "N/A";
 
   return (
     <div className={styles.banner}>
@@ -50,9 +63,9 @@ const EC2InfoBanner = () => {
         <InfoItem label="Instance ID" value={data?.instanceId} />
         <InfoItem label="Tipo"        value={data?.instanceType} />
         <InfoItem label="AZ"          value={data?.availabilityZone} />
-        <InfoItem label="Região"      value={data?.region} />
-        <InfoItem label="IP Privado"  value={data?.privateIp} />
-        <InfoItem label="Hostname"    value={data?.hostname} />
+        <InfoItem label="Região"      value={region} />
+        <InfoItem label="IP Privado"  value={data?.localIp} />
+        <InfoItem label="IP Público"  value={data?.publicIp} />
       </div>
 
       <div className={`${styles.badge} ${isEC2 ? styles.badgeEC2 : styles.badgeLocal}`}>
