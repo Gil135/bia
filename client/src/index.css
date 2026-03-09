@@ -857,5 +857,128 @@ footer {
       left: 50%;
       transform: translateX(-50%);
     }
+
+    
+    /* ───────────────────────────────────────────
+   EC2Info — Estilos do componente de instância
+   Segue o mesmo padrão visual do VersionInfo
+─────────────────────────────────────────────── */
+
+.ec2-info-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ec2-trigger {
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ec2-trigger:hover {
+  background: rgba(255, 153, 0, 0.1);
+  border-color: #ff9900;
+}
+
+.ec2-trigger.success { border-color: #22c55e; }
+.ec2-trigger.error   { border-color: #ef4444; }
+.ec2-trigger.loading { border-color: #f59e0b; }
+
+/* ── Tooltip de detalhes ── */
+.ec2-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #1e1e2e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-width: 280px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.ec2-tooltip-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #333;
+}
+
+/* ── Linha de dado ── */
+.ec2-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #2a2a3a;
+  gap: 12px;
+}
+
+.ec2-row:last-of-type { border-bottom: none; }
+
+.ec2-label {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+.ec2-value {
+  font-size: 0.78rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: #111;
+  padding: 2px 8px;
+  border-radius: 5px;
+  text-align: right;
+  word-break: break-all;
+}
+
+.ec2-error { 
+  color: #ef4444; 
+   background: transparent; }
+
+/* ── Badge de ambiente ── */
+.ec2-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.ec2-badge-aws   { background: #1a3a1a; color: #48bb78; border: 1px solid #48bb78; }
+.ec2-badge-local { background: #3a2a1a; color: #ed8936; border: 1px solid #ed8936; }
+
+/* ── Botão Atualizar ── */
+.ec2-refresh-btn {
+  margin-top: 10px;
+  width: 100%;
+  background: #2a2a3a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 0.75rem;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ec2-refresh-btn:hover:not(:disabled) { background: #3a3a4a; }
+.ec2-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 }
