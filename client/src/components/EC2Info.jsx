@@ -1,30 +1,50 @@
 import React, { useState, useEffect } from 'react';
 
+// ─────────────────────────────────────────────────────────────
+// EC2Info — Exibe Instance ID e IP da instância EC2 no Header
+// Busca dados via GET /api/instance-infos (registrada pelo boot.js)
+// ─────────────────────────────────────────────────────────────
+
 const EC2Info = () => {
   const [instanceData, setInstanceData] = useState(null);
   const [status, setStatus] = useState('loading');
   const [showDetails, setShowDetails] = useState(false);
 
+  // Detecta a URL base correta da API
+  // Backend Express roda na porta 3000
   const getApiUrl = () => {
     if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    if (window.location.port === '8080') return window.location.origin;
-    return 'http://localhost:8080';
+    if (window.location.port === '3000') return window.location.origin;
+    // Em produção na AWS, usa a mesma origem (sem porta)
+    if (window.location.port === '' || window.location.port === '80') {
+      return window.location.origin;
+    }
+    // Fallback para dev local — backend Express na porta 3000
+    return 'http://localhost:3000';
   };
 
   const fetchInstanceInfo = async () => {
     setStatus('loading');
     try {
       const apiUrl = getApiUrl();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch(`${apiUrl}/api/instance-infos`, {
+        signal: controller.signal,
         method: 'GET',
         cache: 'no-cache',
       });
+
+      clearTimeout(timeoutId);
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       const data = await response.json();
       setInstanceData(data);
       setStatus('success');
     } catch (error) {
-      console.warn('[EC2Info] Falha:', error.message);
+      console.warn('[EC2Info] Falha ao buscar metadados:', error.message);
       setStatus('error');
     }
   };
@@ -42,7 +62,7 @@ const EC2Info = () => {
   };
 
   const getShortId = () => {
-    if (!instanceData || !instanceData.instanceId) return 'EC2';
+    if (!instanceData?.instanceId) return 'EC2';
     const id = instanceData.instanceId;
     if (id === 'localhost' || id === 'local-dev') return 'Local';
     return id.length > 13 ? `${id.slice(0, 9)}...${id.slice(-4)}` : id;
