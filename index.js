@@ -5,6 +5,7 @@ var session      = require('express-session');
 var methodOverride = require('method-override');
 
 var app  = express();
+
 var PORT = process.env.PORT || 3000;
 
 // Método customizado para armazenar mensagens na sessão
