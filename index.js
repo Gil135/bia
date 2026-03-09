@@ -1,13 +1,12 @@
-
-
-var express      = require('express');
-var logger       = require('morgan');
-var path         = require('path');
-var session      = require('express-session');
+# Ou use o comando abaixo para substituir direto (sem abrir editor):
+sudo tee /home/ec2-user/bia/index.js << 'EOF'
+var express        = require('express');
+var logger         = require('morgan');
+var path           = require('path');
+var session        = require('express-session');
 var methodOverride = require('method-override');
 
 var app  = express();
-
 var PORT = process.env.PORT || 3000;
 
 // Método customizado para armazenar mensagens na sessão
@@ -32,7 +31,7 @@ app.use(session({
   secret           : process.env.SESSION_SECRET || 'bia-secret-2026',
 }));
 
-// ✅ CORRIGIDO: parse correto do body (era: "(req.body)")
+// Parse do body (corrige bug do código original)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -48,7 +47,7 @@ app.use(function (req, res, next) {
   req.session.messages = [];
 });
 
-// ✅ NOVO: Health Check — ALB verifica se instância está saudável
+// ✅ HEALTH CHECK — ALB verifica se instância está saudável
 app.get('/api/health', function (req, res) {
   res.status(200).json({
     status   : 'healthy',
@@ -56,10 +55,10 @@ app.get('/api/health', function (req, res) {
   });
 });
 
-// ✅ NOVO: Metadados da instância EC2 via IMDSv2
+// ✅ METADADOS DA INSTÂNCIA EC2 — IMDSv2
 var fetchWithTimeout = function (url, options, timeoutMs) {
-  options    = options    || {};
-  timeoutMs  = timeoutMs  || 2000;
+  options   = options   || {};
+  timeoutMs = timeoutMs || 2000;
   var controller = new AbortController();
   var timer = setTimeout(function () { controller.abort(); }, timeoutMs);
   options.signal = controller.signal;
@@ -80,7 +79,6 @@ app.get('/api/instance-info', async function (req, res) {
   };
 
   try {
-    // Passo 1: Solicitar token IMDSv2 (TTL 6 horas)
     var tokenRes = await fetchWithTimeout(IMDS_BASE + '/api/token', {
       method : 'PUT',
       headers: { 'X-aws-ec2-metadata-token-ttl-seconds': '21600' }
@@ -89,7 +87,6 @@ app.get('/api/instance-info', async function (req, res) {
     if (!tokenRes.ok) throw new Error('Falha ao obter token IMDS');
     var token = await tokenRes.text();
 
-    // Passo 2: Buscar metadados em paralelo
     var results = await Promise.all([
       getMeta(token, '/instance-id'),
       getMeta(token, '/instance-type'),
@@ -99,30 +96,22 @@ app.get('/api/instance-info', async function (req, res) {
       getMeta(token, '/hostname'),
     ]);
 
-    var instanceId       = results[0];
-    var instanceType     = results[1];
     var availabilityZone = results[2];
-    var localIp          = results[3];
-    var publicIp         = results[4];
-    var hostname         = results[5];
-
-    // "us-east-1a" → "us-east-1"
     var region = availabilityZone ? availabilityZone.slice(0, -1) : null;
 
     return res.json({
-      instanceId      : instanceId,
-      instanceType    : instanceType,
+      instanceId      : results[0],
+      instanceType    : results[1],
       availabilityZone: availabilityZone,
       region          : region,
-      localIp         : localIp,
-      publicIp        : publicIp,
-      hostname        : hostname,
+      localIp         : results[3],
+      publicIp        : results[4],
+      hostname        : results[5],
       isAWS           : true,
       environment     : process.env.NODE_ENV || 'production'
     });
 
   } catch (err) {
-    // Fallback para ambiente local (sem acesso ao IMDS)
     console.warn('[instance-info] IMDS indisponível:', err.message);
     return res.json({
       instanceId      : 'local-dev',
@@ -161,7 +150,8 @@ app.use(function (req, res) {
   res.status(404).json({ error: 'Rota não encontrada', url: req.originalUrl });
 });
 
-// ✅ CORRIGIDO: usa process.env.PORT
+// Inicia servidor usando PORT do ambiente (necessário para ALB)
 app.listen(PORT, function () {
-  console.log('✅ Servidor "bia" rodando na porta ' + PORT);
+  console.log('Servidor bia rodando na porta ' + PORT);
 });
+EOF
