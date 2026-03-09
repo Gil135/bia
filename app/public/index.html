@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hello World Simple App</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
+      background-color: #1a1a1a;
+      color: #ffffff;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -18,96 +17,44 @@
       min-height: 100vh;
       padding: 20px;
     }
-
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 2rem;
-      color: #fff;
-    }
-
+    h1 { color: #ff9900; margin-bottom: 20px; font-size: 2.5rem; }
     .card {
-      background: #1a1d27;
-      border: 1px solid #2d3148;
-      border-radius: 16px;
-      padding: 2rem 2.5rem;
-      width: 100%;
+      background-color: #2d2d2d;
+      border-radius: 10px;
+      padding: 24px 32px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       max-width: 520px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      width: 100%;
     }
-
     .card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #a0aec0;
-      margin-bottom: 1.5rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 16px;
     }
-
-    .badge {
-      background: #ff9900;
-      color: #000;
-      font-size: 0.65rem;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
     .info-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.8rem 0;
-      border-bottom: 1px solid #2d3148;
+      padding: 10px 0;
+      border-bottom: 1px solid #3d3d3d;
     }
-
     .info-row:last-child { border-bottom: none; }
-
-    .info-label {
-      font-size: 0.85rem;
-      color: #718096;
-      font-weight: 500;
-    }
-
+    .info-label { color: #aaa; font-size: 0.85rem; }
     .info-value {
-      font-size: 0.9rem;
-      color: #fff;
-      font-weight: 600;
       font-family: 'Courier New', monospace;
-      background: #0f1117;
-      padding: 4px 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: #111;
+      padding: 3px 10px;
       border-radius: 6px;
     }
-
-    .info-value.loading { color: #718096; animation: pulse 1.5s infinite; }
-
-    .env-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .env-aws    { background: #1a3a1a; color: #48bb78; border: 1px solid #48bb78; }
-    .env-local  { background: #3a2a1a; color: #ed8936; border: 1px solid #ed8936; }
-
-    .footer {
-      margin-top: 1.5rem;
-      font-size: 0.75rem;
-      color: #4a5568;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+    .loading { animation: pulse 1.5s ease-in-out infinite; color: #666; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .badge-aws   { background: #1a3a1a; color: #48bb78; border: 1px solid #48bb78; border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; }
+    .badge-local { background: #3a2a1a; color: #ed8936; border: 1px solid #ed8936; border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; }
+    .footer { margin-top: 16px; font-size: 0.72rem; color: #555; }
   </style>
 </head>
 <body>
@@ -115,10 +62,7 @@
   <h1>Hello World!</h1>
 
   <div class="card">
-    <div class="card-title">
-      <span>☁️ AWS EC2</span>
-      <span class="badge">Instance Info</span>
-    </div>
+    <div class="card-title">☁️ AWS EC2 — Instance Info</div>
 
     <div class="info-row">
       <span class="info-label">Instance ID</span>
@@ -142,48 +86,47 @@
     </div>
     <div class="info-row">
       <span class="info-label">Ambiente</span>
-      <span class="info-value" id="environment">-</span>
+      <span id="environment">-</span>
     </div>
   </div>
 
   <p class="footer" id="timestamp"></p>
 
   <script>
-    // Busca os dados da API do backend e preenche o HTML
     async function loadInstanceInfo() {
       try {
-        // Chama a rota gerada automaticamente pelo boot.js
-        const res = await fetch('/instance-infos');
+        // Chama a rota gerada pelo boot.js
+        const res = await fetch('/api/instance-infos');
         const data = await res.json();
 
-        // Preenche os campos com os dados recebidos
-        document.getElementById('instanceId').textContent    = data.instanceId    || 'N/A';
-        document.getElementById('localIp').textContent       = data.localIp       || 'N/A';
-        document.getElementById('publicIp').textContent      = data.publicIp      || 'N/A';
-        document.getElementById('instanceType').textContent  = data.instanceType  || 'N/A';
-        document.getElementById('az').textContent            = data.availabilityZone || 'N/A';
+        // Preenche os campos — a API retorna JSON plano
+        document.getElementById('instanceId').textContent   = data.instanceId   || 'N/A';
+        document.getElementById('localIp').textContent      = data.localIp      || 'N/A';
+        document.getElementById('publicIp').textContent     = data.publicIp     || 'N/A';
+        document.getElementById('instanceType').textContent = data.instanceType  || 'N/A';
+        document.getElementById('az').textContent           = data.availabilityZone || 'N/A';
 
-        // Define a badge de ambiente (AWS ou Local)
+        // Badge de ambiente
         const envEl = document.getElementById('environment');
         envEl.textContent  = data.environment;
-        envEl.className    = 'info-value ' + (data.isAWS ? 'env-aws' : 'env-local');
+        envEl.className    = data.isAWS ? 'badge-aws' : 'badge-local';
 
-        // Remove as classes de loading
-        document.querySelectorAll('.info-value.loading')
-          .forEach(el => el.classList.remove('loading'));
+        // Remove loading
+        document.querySelectorAll('.loading').forEach(el => el.classList.remove('loading'));
 
-        // Exibe o timestamp
+        // Timestamp
         document.getElementById('timestamp').textContent =
           'Atualizado em: ' + new Date().toLocaleString('pt-BR');
 
       } catch (err) {
-        console.error('Erro ao buscar informações da instância:', err);
-        document.querySelectorAll('.info-value.loading')
-          .forEach(el => { el.textContent = 'Erro'; el.classList.remove('loading'); });
+        console.error('Erro ao buscar dados da instância:', err);
+        document.querySelectorAll('.loading').forEach(el => {
+          el.textContent = 'Erro';
+          el.classList.remove('loading');
+        });
       }
     }
 
-    // Executa ao carregar a página
     loadInstanceInfo();
   </script>
 
