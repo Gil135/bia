@@ -8,6 +8,29 @@ import Tasks from "./components/Tasks.jsx";
 import AddTask from "./components/AddTask.jsx";
 import About from "./components/About.jsx";
 import DebugLogs from "./components/DebugLogs.jsx";
+// client/src/App.jsx
+import React from "react";
+import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner";
+// ... seus outros imports
+
+function App() {
+  return (
+    <div className="App">
+      {/* Banner fixo no topo com dados da EC2 */}
+      <EC2InfoBanner />
+
+      {/* Conteúdo principal — lista de tarefas */}
+      <main style={{ paddingTop: "16px" }}>
+        {/* Seu componente de lista de tarefas aqui */}
+      </main>
+    </div>
+  );
+}
+
+export default App;// client/src/App.jsx
+import React from "react";
+import EC2InfoBanner from "./components/EC2InfoBanner/EC2InfoBanner";
+// ... seus outros imports
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
