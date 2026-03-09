@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
 
-// ─────────────────────────────────────────────
-// EC2Info — Exibe Instance ID e IP da instância
-// Busca os dados via rota /api/instance-infos
-// que é registrada automaticamente pelo boot.js
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// EC2Info
+// Componente que exibe informações da instância EC2 no Header.
+// Busca os dados via GET /api/instance-infos (boot.js do backend).
+// Padrão idêntico ao VersionInfo.jsx já existente no projeto.
+// ─────────────────────────────────────────────────────────────
 
 const EC2Info = () => {
-  // Estado para armazenar os dados da instância
+  // Dados retornados pela API do backend
   const [instanceData, setInstanceData] = useState(null);
 
-  // Estado de carregamento: 'loading' | 'success' | 'error'
+  // Status da requisição: 'loading' | 'success' | 'error'
   const [status, setStatus] = useState('loading');
 
-  // Controla se o tooltip de detalhes está aberto
+  // Controla abertura/fechamento do tooltip de detalhes
   const [showDetails, setShowDetails] = useState(false);
 
-  // ─────────────────────────────────────────
-  // Detecta a URL base da API (igual ao VersionInfo.jsx do projeto)
-  // ─────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────
+  // getApiUrl — Detecta a URL base da API
+  // Mesma lógica do VersionInfo.jsx do projeto
+  // ─────────────────────────────────────────────────────────
   const getApiUrl = () => {
     if (import.meta.env.VITE_API_URL) {
       return import.meta.env.VITE_API_URL;
@@ -29,14 +31,15 @@ const EC2Info = () => {
     return 'http://localhost:8080';
   };
 
-  // ─────────────────────────────────────────
-  // Busca os dados da instância EC2 na API
-  // Rota: GET /api/instance-infos (gerada pelo boot.js)
-  // ─────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────
+  // fetchInstanceInfo — Chama GET /api/instance-infos
+  // Rota criada pelo boot.js via exports.list no controller
+  // ─────────────────────────────────────────────────────────
   const fetchInstanceInfo = async () => {
     setStatus('loading');
     try {
       const apiUrl = getApiUrl();
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -61,16 +64,17 @@ const EC2Info = () => {
     }
   };
 
-  // Busca ao montar o componente e atualiza a cada 60 segundos
+  // Busca na montagem e atualiza a cada 60 segundos
   useEffect(() => {
     fetchInstanceInfo();
     const interval = setInterval(fetchInstanceInfo, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // ─────────────────────────────────────────
-  // Ícone de status baseado no estado atual
-  // ─────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────
+  // Helpers de exibição
+  // ─────────────────────────────────────────────────────────
+
   const getStatusIcon = () => {
     switch (status) {
       case 'success': return '🟢';
@@ -80,19 +84,21 @@ const EC2Info = () => {
     }
   };
 
-  // Resumo do Instance ID para exibir no botão (ex: i-0abc...ef12)
+  // Exibe versão curta do Instance ID no botão
   const getShortId = () => {
     if (!instanceData?.instanceId) return 'EC2';
     const id = instanceData.instanceId;
-    // Se for localhost (dev local), exibe "Local"
     if (id === 'localhost') return 'Local';
-    // Exibe os primeiros 9 e últimos 4 caracteres
     return id.length > 13 ? `${id.slice(0, 9)}...${id.slice(-4)}` : id;
   };
 
+  // ─────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────
   return (
     <div className="ec2-info-wrapper">
-      {/* ── Botão principal que abre/fecha o tooltip ── */}
+
+      {/* Botão que exibe o status e abre o tooltip */}
       <button
         className={`ec2-trigger ${status}`}
         onClick={() => setShowDetails(!showDetails)}
@@ -101,7 +107,7 @@ const EC2Info = () => {
         {getStatusIcon()} {getShortId()}
       </button>
 
-      {/* ── Tooltip com detalhes completos ── */}
+      {/* Tooltip com os detalhes completos da instância */}
       {showDetails && (
         <div className="ec2-tooltip">
 
@@ -109,7 +115,7 @@ const EC2Info = () => {
             ☁️ EC2 Instance Info
           </div>
 
-          {/* Loading */}
+          {/* Estado: carregando */}
           {status === 'loading' && (
             <div className="ec2-row">
               <span className="ec2-label">Status</span>
@@ -117,7 +123,7 @@ const EC2Info = () => {
             </div>
           )}
 
-          {/* Erro */}
+          {/* Estado: erro */}
           {status === 'error' && (
             <div className="ec2-row">
               <span className="ec2-label">Status</span>
@@ -125,7 +131,7 @@ const EC2Info = () => {
             </div>
           )}
 
-          {/* Dados carregados com sucesso */}
+          {/* Estado: sucesso — exibe todos os dados */}
           {status === 'success' && instanceData && (
             <>
               <div className="ec2-row">
@@ -150,16 +156,14 @@ const EC2Info = () => {
               </div>
               <div className="ec2-row">
                 <span className="ec2-label">Ambiente</span>
-                <span
-                  className={`ec2-badge ${instanceData.isAWS ? 'ec2-badge-aws' : 'ec2-badge-local'}`}
-                >
+                <span className={`ec2-badge ${instanceData.isAWS ? 'ec2-badge-aws' : 'ec2-badge-local'}`}>
                   {instanceData.isAWS ? '☁️ AWS EC2' : '🏠 Local Dev'}
                 </span>
               </div>
             </>
           )}
 
-          {/* Botão de atualizar */}
+          {/* Botão para forçar atualização dos dados */}
           <button
             className="ec2-refresh-btn"
             onClick={fetchInstanceInfo}
