@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+
 // ─────────────────────────────────────────────────────────────
 // EC2Info — Identifica qual instância EC2 está servindo a página
 //
