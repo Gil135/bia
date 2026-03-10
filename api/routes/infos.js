@@ -29,7 +29,7 @@ module.exports = app => {
 
             // 3. CORREÇÃO: Enviando o JSON no formato exato que o Front-end espera
             res.json({
-                source: "isAWS", // Essa tag faz a bolinha ficar verde no banner "✅ EC2 AWS"
+                isAWS : "isAWS", // Essa tag faz a bolinha ficar verde no banner "✅ EC2 AWS"
                 instanceId,
                 instanceType,
                 availabilityZone,
