@@ -67,7 +67,7 @@ const EC2InfoBanner = () => {
         <InfoItem label="Região"      value={region} />
         {/* ✅ CORRIGIDO: campo "privateIp" conforme retorno da API */}
         <InfoItem label="IP Privado"  value={data?.privateIp} />
-        <InfoItem label="IP Público"  value={data?.hostname} />
+        <InfoItem label="IP Público"  value={data?.publicIp} />
       </div>
 
       <div className={`${styles.badge} ${isEC2 ? styles.badgeEC2 : styles.badgeLocal}`}>
