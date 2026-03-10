@@ -46,7 +46,7 @@ const EC2InfoBanner = () => {
   }
 
   // ✅ CORRIGIDO: usa o campo "isAWS" que a API realmente retorna
-  const isEC2 = data?.iAWS === true;
+  const isAWS  = data?.isAWS === true;
 
   // ✅ CORRIGIDO: deriva região da AZ ("us-east-1a" → "us-east-1")
   const region = data?.availabilityZone
@@ -71,7 +71,7 @@ const EC2InfoBanner = () => {
       </div>
 
       <div className={`${styles.badge} ${isEC2 ? styles.badgeEC2 : styles.badgeLocal}`}>
-        {isEC2 ? "🟡 Local Dev" : "✅ EC2 AWS"}
+        {isAWS ? "🟡 Local Dev" : "✅ EC2 AWS"}
       </div>
     </div>
   );
