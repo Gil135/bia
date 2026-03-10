@@ -46,7 +46,7 @@ const EC2InfoBanner = () => {
   }
 
   // ✅ CORRIGIDO: usa o campo "isAWS" que a API realmente retorna
-  const isEC2 = data?.isAWS === true;
+  const isEC2 = data?.iAWS === true;
 
   // ✅ CORRIGIDO: deriva região da AZ ("us-east-1a" → "us-east-1")
   const region = data?.availabilityZone
