@@ -25,7 +25,7 @@ module.exports = app => {
             const availabilityZone = await fetchMeta('placement/availability-zone');
             const region = await fetchMeta('placement/region');
             const privateIp = await fetchMeta('local-ipv4');
-            const hostname = await fetchMeta('local-hostname');
+            const publicIp = await fetchMeta('public-ipv4');
 
             // 3. CORREÇÃO: Enviando o JSON no formato exato que o Front-end espera
             res.json({
@@ -35,7 +35,7 @@ module.exports = app => {
                 availabilityZone,
                 region,
                 privateIp,
-                hostname
+                publicIp
             });
 
         } catch (error) {
