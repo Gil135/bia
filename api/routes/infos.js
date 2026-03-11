@@ -24,7 +24,7 @@ module.exports = app => {
             const instanceType = await fetchMeta('instance-type');
             const availabilityZone = await fetchMeta('placement/availability-zone');
             const region = await fetchMeta('placement/region');
-            const privateIp = await fetchMeta('local-ipv4');
+            const localIp = await fetchMeta('local-ipv4');
             const publicIp = await fetchMeta('public-ipv4');
 
             // 3. CORREÇÃO: Enviando o JSON no formato exato que o Front-end espera
@@ -38,7 +38,7 @@ module.exports = app => {
                     publicIp
                 });
 
-        } catch (error) {
+          } catch (error) {
             console.error('Erro ao buscar dados IMDSv2:', error.message);
             // Dados de fallback para não quebrar localmente
           res.json({
