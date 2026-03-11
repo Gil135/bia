@@ -69,7 +69,8 @@ return (
       <p><strong>IP Público:</strong> {data?.publicIp || 'N/A'}</p>
       {/* Exibe a zona de disponibilidade apenas se for AWS */}
       {isEC2 && (
-        <p><strong>Zona (AZ):</strong> {data?.availabilityZone || 'N/A'}</p>
+        <p><strong>Zona (AZ):</strong> {data?.region|| 'N/A'}</p>
+        <p><strong>Região:</strong> {data?.availabilityZone || 'N/A'}</p>        
       )}
     </div>
   </div>

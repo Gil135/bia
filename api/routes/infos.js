@@ -1,47 +1,81 @@
-module.exports = app => {
-    // 1. CORREÇÃO: URL alterada para "instance-info" (no singular)
-    app.get('/api/instance-info', async (req, res) => {
-        try {
-            // Obtém o token do IMDSv2
-            const tokenResponse = await fetch('http://169.254.169.254/latest/api/token', {
-                method: 'PUT',
-                headers: { 'X-aws-ec2-metadata-token-ttl-seconds': '21600' }
-            });
-            const token = await tokenResponse.text();
+const http = require('http');
 
-            // Função auxiliar para buscar os dados sem repetir código
+module.exports = app => {
+    app.get('/api/instance-info', async (req, res) => {
+        
+        // Função customizada super robusta usando o módulo nativo HTTP
+        const requestMetadata = (path, method = 'GET', headers = {}) => {
+            return new Promise((resolve, reject) => {
+                const options = {
+                    hostname: '169.254.169.254',
+                    port: 80,
+                    path: path,
+                    method: method,
+                    headers: headers,
+                    timeout: 2000 // Limite de 2 segundos para não travar o servidor
+                };
+
+                const reqObj = http.request(options, (response) => {
+                    let data = '';
+                    response.on('data', chunk => { data += chunk; });
+                    response.on('end', () => {
+                        if (response.statusCode >= 200 && response.statusCode < 300) {
+                            resolve(data);
+                        } else {
+                            reject(new Error(`HTTP Error: ${response.statusCode}`));
+                        }
+                    });
+                });
+
+                reqObj.on('error', (e) => reject(e));
+                reqObj.on('timeout', () => {
+                    reqObj.destroy();
+                    reject(new Error('Timeout na requisição. Possível bloqueio de Hop Limit (Docker).'));
+                });
+                reqObj.end();
+            });
+        };
+
+        try {
+            // 1. Obtém o token do IMDSv2
+            const token = await requestMetadata('/latest/api/token', 'PUT', {
+                'X-aws-ec2-metadata-token-ttl-seconds': '21600'
+            });
+
+            // 2. Função auxiliar usando o token de segurança
             const fetchMeta = async (path) => {
                 try {
-                    const r = await fetch(`http://169.254.169.254/latest/meta-data/${path}`, {
-                        headers: { 'X-aws-ec2-metadata-token': token }
+                    return await requestMetadata(`/latest/meta-data/${path}`, 'GET', {
+                        'X-aws-ec2-metadata-token': token
                     });
-                    return r.ok ? await r.text() : "N/A";
-                } catch(e) { return "N/A"; }
+                } catch(e) {
+                    return "N/A";
+                }
             };
 
-            // 2. CORREÇÃO: Buscando todos os dados que o seu Banner do React exige
+            // 3. Busca todos os dados da máquina
             const instanceId = await fetchMeta('instance-id');
             const instanceType = await fetchMeta('instance-type');
             const availabilityZone = await fetchMeta('placement/availability-zone');
             const region = await fetchMeta('placement/region');
-            const privateIp = await fetchMeta('local-ipv4');
+            const localIp = await fetchMeta('local-ipv4');
             const publicIp = await fetchMeta('public-ipv4');
 
-            // 3. CORREÇÃO: Enviando o JSON no formato exato que o Front-end espera
             res.json({
-                    isAWS: true, // Garante que o front-end saiba que está na nuvem
-                    instanceId,
-                    instanceType,
-                    availabilityZone,
-                    localIp,
-                    publicIp
-                });
+                isAWS: true,
+                instanceId,
+                instanceType,
+                availabilityZone,
+                region,
+                localIp,
+                publicIp
+            });
 
         } catch (error) {
             console.error('Erro ao buscar dados IMDSv2:', error.message);
-            // Dados de fallback para não quebrar localmente
-          res.json({
-                isAWS: false, // Informa ao front-end que é ambiente de desenvolvimento
+            // Se falhar (ex: rodando no PC ou bloqueio do Docker), envia o fallback
+            res.json({
+                isAWS: false,
                 instanceId: 'localhost',
                 instanceType: 'Local Dev',
                 availabilityZone: 'N/A',
