@@ -45,36 +45,36 @@ const EC2InfoBanner = () => {
     );
   }
 
-  // ✅ CORRIGIDO: usa o campo "isAWS" que a API realmente retorna
-  const isAWS  = data?.source === "isAWS";
+  // 1. AVALIA O AMBIENTE
+// Se data.isAWS for true, ou se o instanceId começar com "i-" (padrão da AWS)
+const isEC2 = data?.isAWS === true || (data?.instanceId && data?.instanceId.startsWith('i-'));
 
-  // ✅ CORRIGIDO: deriva região da AZ ("us-east-1a" → "us-east-1")
-  const region = data?.availabilityZone
-    ? data.availabilityZone.slice(0, -1)
-    : "N/A";
+// 2. DEFINE PROPRIEDADES VISUAIS DINÂMICAS BASEADAS NO AMBIENTE
+const ambienteTexto = isEC2 ? "Nuvem AWS (EC2)" : "Ambiente Local";
+const iconeAmbiente = isEC2 ? "☁️" : "💻";
+const classeCor = isEC2 ? "banner-aws" : "banner-local"; // Você pode criar essas classes no seu CSS
 
-  return (
-    <div className={styles.banner}>
-      <div className={styles.bannerTitle}>
-        <span className={styles.serverIcon}>🖥️</span>
-        <span className={styles.titleText}>Instância Ativa</span>
-      </div>
-
-      <div className={styles.infoGrid}>
-        <InfoItem label="Instance ID" value={data?.instanceId} />
-        <InfoItem label="Tipo"        value={data?.instanceType} />
-        <InfoItem label="AZ"          value={data?.availabilityZone} />
-        <InfoItem label="Região"      value={region} />
-        {/* ✅ CORRIGIDO: campo "privateIp" conforme retorno da API */}
-        <InfoItem label="IP Privado"  value={data?.privateIp} />
-        <InfoItem label="IP Público"  value={data?.publicIp} />
-      </div>
-
-      <div className={`${styles.badge} ${isEC2 ? styles.badgeEC2 : styles.badgeLocal}`}>
-        {isAWS ? "🟡 Local Dev" : "✅ EC2 AWS"}
-      </div>
+return (
+  <div className={`ec2-banner-container ${classeCor}`}>
+    <div className="ec2-banner-header">
+      {/* Exibindo o tipo de ambiente de forma dinâmica */}
+      <span className="ambiente-badge">
+        {iconeAmbiente} Ambiente: <strong>{ambienteTexto}</strong>
+      </span>
     </div>
-  );
+    
+    <div className="ec2-banner-details">
+      <p><strong>ID da Instância:</strong> {data?.instanceId || 'N/A'}</p>
+      <p><strong>IP Privado:</strong> {data?.localIp || 'N/A'}</p>
+      <p><strong>IP Público:</strong> {data?.publicIp || 'N/A'}</p>
+      {/* Exibe a zona de disponibilidade apenas se for AWS */}
+      {isEC2 && (
+        <p><strong>Zona (AZ):</strong> {data?.availabilityZone || 'N/A'}</p>
+      )}
+    </div>
+  </div>
+);
+
 };
 
 export default EC2InfoBanner;

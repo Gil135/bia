@@ -29,26 +29,24 @@ module.exports = app => {
 
             // 3. CORREÇÃO: Enviando o JSON no formato exato que o Front-end espera
             res.json({
-                source: "isAWS", // Essa tag faz a bolinha ficar verde no banner "✅ EC2 AWS"
-                instanceId,
-                instanceType,
-                availabilityZone,
-                region,
-                privateIp,
-                publicIp
-            });
+                    isAWS: true, // Garante que o front-end saiba que está na nuvem
+                    instanceId,
+                    instanceType,
+                    availabilityZone,
+                    localIp,
+                    publicIp
+                });
 
         } catch (error) {
             console.error('Erro ao buscar dados IMDSv2:', error.message);
             // Dados de fallback para não quebrar localmente
-            res.json({
-                source: "local",
-                instanceId: 'local-instance',
-                instanceType: 't2.micro (simulado)',
-                availabilityZone: 'local-zone',
-                region: 'local-region',
-                privateIp: '127.0.0.1',
-                hostname: 'localhost'
+          res.json({
+                isAWS: false, // Informa ao front-end que é ambiente de desenvolvimento
+                instanceId: 'localhost',
+                instanceType: 'Local Dev',
+                availabilityZone: 'N/A',
+                localIp: '127.0.0.1',
+                publicIp: 'N/A'
             });
         }
     });
