@@ -33,7 +33,7 @@ module.exports = app => {
                     instanceId,
                     instanceType,
                     availabilityZone,
-                    region
+                    region,
                     localIp,
                     publicIp
                 });
