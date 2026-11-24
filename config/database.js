@@ -111,4 +111,3 @@ async function getSecrets(secretsManagerClient) {
 }
 
 module.exports = getConfig;
-
